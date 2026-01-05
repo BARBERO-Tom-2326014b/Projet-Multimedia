@@ -1,105 +1,114 @@
 using UnityEngine;
 
-public class GoombaMovement :  MonoBehaviour
+[RequireComponent(typeof(Rigidbody))]
+public class GoombaMovement : MonoBehaviour
 {
+    public enum AxeDeplacement { X, Z }
+
     [Header("Déplacement")]
-    [Tooltip("Vitesse de déplacement du Goomba")]
     public float vitesse = 2f;
-    
-    [Tooltip("Distance maximale de déplacement à partir du point de départ")]
     public float distanceMax = 5f;
-    
-    [Header("Optionnel")]
-    [Tooltip("Axe de déplacement (X, Y ou Z)")]
-    public enum AxeDeplacement { X, Y, Z }
     public AxeDeplacement axe = AxeDeplacement.X;
-    
-    [Tooltip("Retourner le sprite selon la direction (pour un visuel correct)")]
-    public bool retournerSprite = true;
-    
-    // Variables privées
-    private Vector3 positionDepart;
-    private float direction = 1f; // 1 pour droite, -1 pour gauche
-    
-    void Start()
+
+    [Header("Obstacles (optionnel)")]
+    public LayerMask obstacleLayers;
+    public float distanceDetectionObstacle = 0.5f;
+
+    [Header("Visuel")]
+    public bool tournerModele = true;
+
+    private Rigidbody rb;
+    private int direction = 1;
+
+    // bornes
+    private float minAxe;
+    private float maxAxe;
+
+    private void Awake()
     {
-        // Enregistrer la position de départ
-        positionDepart = transform.position;
+        rb = GetComponent<Rigidbody>();
     }
-    
-    void Update()
+
+    private void Start()
     {
-        // Calculer le déplacement
-        Vector3 deplacement = Vector3.zero;
-        
-        switch (axe)
+        // Si tu es en kinematic, le mouvement se fait via MovePosition
+        // Si tu veux rester en dynamique, mets rb.isKinematic = false et adapte.
+        rb.isKinematic = true;
+        rb.useGravity = false;
+
+        float startAxe = (axe == AxeDeplacement.X) ? rb.position.x : rb.position.z;
+        minAxe = startAxe - distanceMax;
+        maxAxe = startAxe + distanceMax;
+
+        AppliquerRotation();
+    }
+
+    private void FixedUpdate()
+    {
+        Vector3 forward = (axe == AxeDeplacement.X) ? Vector3.right : Vector3.forward;
+        forward *= direction;
+
+        // Demi-tour si obstacle devant (si tu utilises obstacleLayers)
+        if (obstacleLayers.value != 0 && DetecterObstacleDevant(forward))
         {
-            case AxeDeplacement.X:
-                deplacement = Vector3.right * direction * vitesse * Time.deltaTime;
-                break;
-            case AxeDeplacement.Y:
-                deplacement = Vector3.up * direction * vitesse * Time.deltaTime;
-                break;
-            case AxeDeplacement.Z: 
-                deplacement = Vector3.forward * direction * vitesse * Time. deltaTime;
-                break;
+            ChangerDeSens();
+            forward = ((axe == AxeDeplacement.X) ? Vector3.right : Vector3.forward) * direction;
         }
-        
-        // Déplacer le Goomba
-        transform. Translate(deplacement);
-        
-        // Vérifier si le Goomba a atteint la distance maximale
-        float distanceParcourue = 0f;
-        
-        switch (axe)
+
+        Vector3 nextPos = rb.position + forward * vitesse * Time.fixedDeltaTime;
+
+        // Clamp + demi-tour sur bornes (plus de blocage)
+        if (axe == AxeDeplacement.X)
         {
-            case AxeDeplacement. X:
-                distanceParcourue = Mathf.Abs(transform. position.x - positionDepart.x);
-                break;
-            case AxeDeplacement. Y:
-                distanceParcourue = Mathf. Abs(transform.position.y - positionDepart.y);
-                break;
-            case AxeDeplacement.Z:
-                distanceParcourue = Mathf.Abs(transform. position.z - positionDepart.z);
-                break;
-        }
-        
-        // Inverser la direction si la distance max est atteinte
-        if (distanceParcourue >= distanceMax)
-        {
-            direction *= -1;
-            
-            // Retourner le sprite si activé
-            if (retournerSprite)
+            if (nextPos.x <= minAxe)
             {
-                Vector3 scale = transform.localScale;
-                scale.x *= -1;
-                transform.localScale = scale;
+                nextPos.x = minAxe;
+                direction = 1;
+                AppliquerRotation();
+            }
+            else if (nextPos.x >= maxAxe)
+            {
+                nextPos.x = maxAxe;
+                direction = -1;
+                AppliquerRotation();
             }
         }
-    }
-    
-    // Pour visualiser la zone de déplacement dans l'éditeur Unity
-    private void OnDrawGizmosSelected()
-    {
-        Vector3 positionRef = Application.isPlaying ? positionDepart : transform.position;
-        
-        Gizmos.color = Color. yellow;
-        
-        switch (axe)
+        else // Z
         {
-            case AxeDeplacement.X:
-                Gizmos.DrawLine(positionRef + Vector3.left * distanceMax, 
-                               positionRef + Vector3.right * distanceMax);
-                break;
-            case AxeDeplacement.Y: 
-                Gizmos.DrawLine(positionRef + Vector3.down * distanceMax, 
-                               positionRef + Vector3.up * distanceMax);
-                break;
-            case AxeDeplacement.Z: 
-                Gizmos.DrawLine(positionRef + Vector3.back * distanceMax, 
-                               positionRef + Vector3.forward * distanceMax);
-                break;
+            if (nextPos.z <= minAxe)
+            {
+                nextPos.z = minAxe;
+                direction = 1;
+                AppliquerRotation();
+            }
+            else if (nextPos.z >= maxAxe)
+            {
+                nextPos.z = maxAxe;
+                direction = -1;
+                AppliquerRotation();
+            }
         }
+
+        rb.MovePosition(nextPos);
+    }
+
+    private bool DetecterObstacleDevant(Vector3 forward)
+    {
+        Vector3 origin = rb.position + Vector3.up * 0.5f; // évite de "voir" le sol
+        return Physics.Raycast(origin, forward, distanceDetectionObstacle, obstacleLayers, QueryTriggerInteraction.Ignore);
+    }
+
+    private void ChangerDeSens()
+    {
+        direction *= -1;
+        AppliquerRotation();
+    }
+
+    private void AppliquerRotation()
+    {
+        if (!tournerModele) return;
+
+        float yaw = (direction == 1) ? 0f : 180f;
+        transform.rotation = Quaternion.Euler(0f, yaw, 0f);
     }
 }
