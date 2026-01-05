@@ -6,10 +6,14 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
+    [Header("Scenes")]
+    [SerializeField] private string gameSceneName = "SceneGame";
+
     [Header("Score")]
     [SerializeField] private int score = 0;
     public int Score => score;
 
+    [Header("UI (optionnel selon la scène)")]
     [SerializeField] private TextMeshProUGUI hudScoreText; // hud_score/value
     [SerializeField] private TextMeshProUGUI endScoreText; // FinalScoreText (panel defeat/victory)
 
@@ -22,12 +26,47 @@ public class GameManager : MonoBehaviour
         }
 
         Instance = this;
-        // Si tu restes sur une seule scène, tu peux enlever cette ligne
-        // DontDestroyOnLoad(gameObject);
+
+        // IMPORTANT: permet d'avoir le même GameManager en Menu + en Jeu
+        DontDestroyOnLoad(gameObject);
+
+        // Quand une nouvelle scène charge, on retente de récupérer les références UI si besoin
+        SceneManager.sceneLoaded += OnSceneLoaded;
 
         UpdateScoreTexts();
     }
 
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // Si tes TextMeshProUGUI sont assignés manuellement dans l'inspector de la scène de jeu,
+        // tu peux ignorer cette partie.
+        // Ici on fait juste un refresh (les champs null ne casseront pas).
+        UpdateScoreTexts();
+    }
+
+    // --- MENU ---
+    public void StartGame()
+    {
+        Time.timeScale = 1f;
+        ResetScore(); // optionnel: repartir à 0 au démarrage
+        SceneManager.LoadScene(gameSceneName);
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
+    }
+
+    // --- SCORE ---
     public void AddScore(int amount)
     {
         score += amount;
@@ -42,34 +81,24 @@ public class GameManager : MonoBehaviour
     }
 
     public void RestartGame()
-{
-    // Remet le temps à la normale au cas où tu l'aurais mis en pause
-    Time.timeScale = 1f;
-
-    // Remet le score à zéro (si tu veux repartir de 0)
-    ResetScore();
-
-    // Recharge la scène courante
-    Scene currentScene = SceneManager.GetActiveScene();
-    SceneManager.LoadScene(currentScene.buildIndex);
-}
+    {
+        Time.timeScale = 1f;
+        ResetScore();
+        Scene currentScene = SceneManager.GetActiveScene();
+        SceneManager.LoadScene(currentScene.buildIndex);
+    }
 
     public void OnGameEnd()
     {
-        // Called when defeat/victory happens
         UpdateScoreTexts();
     }
 
     private void UpdateScoreTexts()
     {
         if (hudScoreText != null)
-        {
             hudScoreText.text = score.ToString();
-        }
 
         if (endScoreText != null)
-        {
             endScoreText.text = score.ToString();
-        }
     }
 }
