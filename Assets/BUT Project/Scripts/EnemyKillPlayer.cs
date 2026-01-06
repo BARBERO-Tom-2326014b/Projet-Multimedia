@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class GoombaKillPlayer : MonoBehaviour
+public class EnemyKillPlayer : MonoBehaviour
 {
     [Header("Références")]
     [SerializeField] private GameObject defeatPopup;         // Panel de défaite (UI)
@@ -36,6 +36,7 @@ public class GoombaKillPlayer : MonoBehaviour
             // Ajouter des points au score global
             if (GameManager.Instance != null)
             {
+                Debug.Log($"BOO KILL -> AddScore({scoreValue})");
                 GameManager.Instance.AddScore(scoreValue);
             }
 

@@ -7,15 +7,15 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     [Header("Scenes")]
-    [SerializeField] private string gameSceneName = "SceneGame";
+    [SerializeField] private string gameSceneName = "SimpleSceneGame";
 
     [Header("Score")]
     [SerializeField] private int score = 0;
     public int Score => score;
 
-    [Header("UI (optionnel selon la scène)")]
-    [SerializeField] private TextMeshProUGUI hudScoreText; // hud_score/value
-    [SerializeField] private TextMeshProUGUI endScoreText; // FinalScoreText (panel defeat/victory)
+    [Header("UI (auto-binding via noms de ta Hierarchy)")]
+    [SerializeField] private TextMeshProUGUI hudScoreText; // Canvas/HUD_Score/Value
+    [SerializeField] private TextMeshProUGUI endScoreText; // Canvas/Panel_Victory/ScoreFinal
 
     private void Awake()
     {
@@ -26,13 +26,11 @@ public class GameManager : MonoBehaviour
         }
 
         Instance = this;
-
-        // IMPORTANT: permet d'avoir le même GameManager en Menu + en Jeu
         DontDestroyOnLoad(gameObject);
 
-        // Quand une nouvelle scène charge, on retente de récupérer les références UI si besoin
         SceneManager.sceneLoaded += OnSceneLoaded;
 
+        RebindUI();
         UpdateScoreTexts();
     }
 
@@ -44,17 +42,30 @@ public class GameManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // Si tes TextMeshProUGUI sont assignés manuellement dans l'inspector de la scène de jeu,
-        // tu peux ignorer cette partie.
-        // Ici on fait juste un refresh (les champs null ne casseront pas).
+        RebindUI();
         UpdateScoreTexts();
+    }
+
+    private void RebindUI()
+    {
+        // 1) HUD Score: Canvas/HUD_Score/Value
+        hudScoreText = FindTMP("Canvas/HUD_Score/Value");
+
+        // 2) Score final (victoire): Canvas/Panel_Victory/ScoreFinal
+        endScoreText = FindTMP("Canvas/Panel_Victory/ScoreFinal");
+    }
+
+    private TextMeshProUGUI FindTMP(string hierarchyPath)
+    {
+        var go = GameObject.Find(hierarchyPath);
+        return go != null ? go.GetComponent<TextMeshProUGUI>() : null;
     }
 
     // --- MENU ---
     public void StartGame()
     {
         Time.timeScale = 1f;
-        ResetScore(); // optionnel: repartir à 0 au démarrage
+        ResetScore();
         SceneManager.LoadScene(gameSceneName);
     }
 
@@ -81,12 +92,11 @@ public class GameManager : MonoBehaviour
     }
 
     public void RestartGame()
-    {
-        Time.timeScale = 1f;
-        ResetScore();
-        Scene currentScene = SceneManager.GetActiveScene();
-        SceneManager.LoadScene(currentScene.buildIndex);
-    }
+{
+    Time.timeScale = 1f;
+    ResetScore();
+    SceneManager.LoadScene(gameSceneName);
+}
 
     public void OnGameEnd()
     {
@@ -101,4 +111,10 @@ public class GameManager : MonoBehaviour
         if (endScoreText != null)
             endScoreText.text = score.ToString();
     }
+
+    public void BackToMenu()
+{
+    Time.timeScale = 1f;
+    SceneManager.LoadScene("MainMenu");
+}
 }
