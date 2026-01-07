@@ -42,6 +42,10 @@ public class GoombaMovement : MonoBehaviour
 
         AppliquerRotation();
     }
+    public void Mourir()
+    {
+        Destroy(gameObject);
+    }
 
     private void FixedUpdate()
     {
