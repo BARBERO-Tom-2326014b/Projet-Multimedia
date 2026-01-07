@@ -7,7 +7,7 @@ namespace BUT
     public class EndGameUI : MonoBehaviour
     {
         [Header("Score Data")]
-        [SerializeField] private Score score;   // ScriptableObject Score_Game
+        [SerializeField] private Score score; // ScriptableObject Score_Game
 
         [Header("Victory Panel")]
         [SerializeField] private GameObject panelVictory;
@@ -23,26 +23,46 @@ namespace BUT
         [SerializeField] private Button defeatBtnMenu;
         [SerializeField] private Button defeatBtnQuit;
 
+        [Header("Chest Reference")] 
+        [SerializeField] private ouvertureCoffre chest; 
+
         private void Awake()
         {
-            // S’assurer que panneaux cachés au démarrage
+            // S'assurer que les panneaux sont cachés au démarrage
             if (panelVictory) panelVictory.SetActive(false);
             if (panelDefeat) panelDefeat.SetActive(false);
         }
 
         private void Start()
         {
-            // Brancher les boutons (actions temporaires – on affinera après)
+            // Brancher les boutons
             if (victoryBtnMenu) victoryBtnMenu.onClick.AddListener(OnClickMenu);
             if (victoryBtnQuit) victoryBtnQuit.onClick.AddListener(OnClickQuit);
             if (defeatBtnMenu) defeatBtnMenu.onClick.AddListener(OnClickMenu);
             if (defeatBtnQuit) defeatBtnQuit.onClick.AddListener(OnClickQuit);
         }
 
+        public void EvaluateGameOver()
+        {
+            // Vérifier les conditions de victoire
+            if (score && score.Value >= 100 || IsChestOpened())
+            {
+                ShowVictory();
+            }
+            else
+            {
+                ShowDefeat();
+            }
+        }   
+        private bool IsChestOpened()
+        {
+            // Vérifier si le coffre est ouvert
+            return chest && chest.IsOpened;
+        }
         private void OnClickMenu()
         {
             Debug.Log("Retour Menu (à remplacer par chargement de scène Menu).");
-            // Exemple futur: UnityEngine.SceneManagement.SceneManager.LoadScene("Menu");
+            // Exemple futur : UnityEngine.SceneManagement.SceneManager.LoadScene("Menu");
         }
 
         private void OnClickQuit()
@@ -56,7 +76,9 @@ namespace BUT
 
         public void ShowVictory()
         {
+            StopFootsteps(); // Arrêter les bruits de pas
             if (panelDefeat) panelDefeat.SetActive(false);
+
             if (panelVictory)
             {
                 panelVictory.SetActive(true);
@@ -66,7 +88,10 @@ namespace BUT
 
         public void ShowDefeat()
         {
+            Debug.Log("ShowDefeat appelé.");
+            StopFootsteps(); // Arrêter les bruits de pas
             if (panelVictory) panelVictory.SetActive(false);
+
             if (panelDefeat)
             {
                 panelDefeat.SetActive(true);
@@ -83,7 +108,28 @@ namespace BUT
         private void UpdateDefeatScore()
         {
             if (score && defeatScore)
+            {
+                Debug.Log($"Score au moment de la défaite : {score.Value}");
                 defeatScore.text = "Score: " + score.Value;
+            }
+                
         }
+
+        private void StopFootsteps()
+        {
+            // Stopper l'AudioSource des bruits de pas
+            var player = GameObject.FindWithTag("Player"); // Assurez-vous que le tag est "Player"
+            if (player)
+            {
+                var audioSource = player.GetComponent<AudioSource>();
+                if (audioSource)
+                {
+                    audioSource.Stop(); // Arrête le son des pas
+                    audioSource.enabled = false; // Désactive l'AudioSource
+                }
+            }
+        }
+
+        
     }
 }

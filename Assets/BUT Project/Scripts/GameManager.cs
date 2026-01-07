@@ -117,4 +117,31 @@ public class GameManager : MonoBehaviour
     Time.timeScale = 1f;
     SceneManager.LoadScene("MainMenu");
 }
+    public void EndGame(bool isVictory)
+{
+    Debug.Log($"EndGame appelé | Victoire : {isVictory} | Score final : {score}");
+
+    Time.timeScale = 0f;
+
+    // Trouver EndGameUI dans la scène
+    var endGameUI = FindObjectOfType<BUT.EndGameUI>();
+
+    if (endGameUI != null)
+    {
+        Debug.Log($"EndGameUI trouvé : Panneau affiché - {(isVictory ? "Victory" : "Defeat")}");
+
+        if (isVictory)
+        {
+            endGameUI.ShowVictory();
+        }
+        else
+        {
+            endGameUI.ShowDefeat();
+        }
+    }
+    else
+    {
+        Debug.LogError("EndGameUI introuvable dans la scène !");
+    }
+}
 }

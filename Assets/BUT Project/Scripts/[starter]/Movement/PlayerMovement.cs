@@ -8,8 +8,7 @@ namespace BUT
     [RequireComponent(typeof(CharacterController))]
     public class PlayerMovement : MonoBehaviour
     {
-        [SerializeField]
-        Movement m_Movement;
+        [SerializeField] Movement m_Movement;
 
         float m_CurrentSpeed;
         public float CurrentSpeed
@@ -40,6 +39,7 @@ namespace BUT
 
         private Vector3 m_Direction;
         public Vector3 Direction { set => m_Direction = value; get => m_Direction; }
+
         public Vector3 FullDirection => (GroundRotationOffset * Direction * CurrentSpeed + Vector3.up * GravityVelocity);
 
         private Quaternion m_GroundRotationOffset;
@@ -53,10 +53,15 @@ namespace BUT
         private int m_JumpNumber;
         public int JumpNumber { set => m_JumpNumber = value; get => m_JumpNumber; }
 
-        [SerializeField]
-        float m_RayLenght;
-        [SerializeField]
-        LayerMask m_RayMask;
+        [SerializeField] float m_RayLenght;
+        [SerializeField] LayerMask m_RayMask;
+
+        [Header("Camera")]
+        [SerializeField] private OrbitCamera m_OrbitCamera;
+
+        // Look (souris) et Move (ZQSD)
+        private Vector2 m_LookInput;
+        private Vector2 m_MovementInput;
 
         RaycastHit m_Hit;
 
@@ -73,7 +78,6 @@ namespace BUT
         }
 
         private CharacterController m_CharacterController;
-        private Vector2 m_MovementInput;
         private Vector3 m_MovementDirection;
 
         public UnityEvent<float> OnSpeedChange;
@@ -83,21 +87,10 @@ namespace BUT
         private void Awake()
         {
             m_CharacterController = GetComponent<CharacterController>();
-        }
 
-        public void MovingChanged(bool _moving)
-        {
-            OnMovingChange?.Invoke(_moving);
-        }
-
-        public void SpeedChanged(float _speed)
-        {
-            OnSpeedChange?.Invoke(_speed);
-        }
-
-        public void GroundedChanged(bool _grounded)
-        {
-            OnGroundedChange?.Invoke(_grounded);
+            // Auto-assign OrbitCamera
+            if (m_OrbitCamera == null && Camera.main != null)
+                m_OrbitCamera = Camera.main.GetComponent<OrbitCamera>();
         }
 
         private void OnDisable()
@@ -110,35 +103,58 @@ namespace BUT
             StartCoroutine(Moving());
         }
 
-        IEnumerator Moving()
+        // =========================
+        // PlayerInput "Send Messages"
+        // Les actions doivent s'appeler: Move, Look, Jump, Sprint
+        // =========================
+        public void OnMove(InputValue value)
         {
-            while (enabled)
-            {
-                if (m_MovementInput.magnitude > 0.1f)
-                {
-                    if (!IsMoving)
-                    {
-                        IsMoving = true;
-                    }
-                    // clamp input magnitude
-                    m_MovementInput = Vector3.ClampMagnitude(m_MovementInput, 1);
-                }
-                else if (IsMoving)
-                {
-                    IsMoving = false;
-                }
-
-                ManageDirection();
-                ManageGravity();
-                if (IsMoving) ApplyRotation();
-                ApplyMovement();
-                yield return new WaitForFixedUpdate();
-            }
+            m_MovementInput = value.Get<Vector2>();
         }
 
+        public void OnLook(InputValue value)
+        {
+            m_LookInput = value.Get<Vector2>();
+            // Debug temporaire si besoin :
+            // Debug.Log($"Look input: {m_LookInput}");
+        }
+
+        public void OnSprint(InputValue value)
+        {
+            IsSprinting = value.Get<float>() > 0.5f;
+        }
+
+        public void OnJump(InputValue value)
+        {
+            if (!value.isPressed) return;
+
+            if (!m_CharacterController.isGrounded && JumpNumber >= m_Movement.MaxJumpNumber) return;
+            if (JumpNumber == 0) StartCoroutine(WaitForLanding());
+            JumpNumber++;
+
+            if (m_Movement.MinimazeJumpPower) GravityVelocity += m_Movement.JumpPower / JumpNumber;
+            else GravityVelocity += m_Movement.JumpPower;
+        }
+
+        // =========================
+        // (Optionnel) si tu utilises encore Invoke Unity Events quelque part
+        // Tu peux garder ces méthodes, elles ne gênent pas.
+        // =========================
         public void SetInputMove(InputAction.CallbackContext _context)
         {
             m_MovementInput = _context.ReadValue<Vector2>();
+        }
+
+        public void SetInputLook(InputAction.CallbackContext _context)
+        {
+            m_LookInput = _context.ReadValue<Vector2>();
+            // Debug temporaire :
+            // Debug.Log($"Look input: {m_LookInput}");
+        }
+
+        public void SetInputSprint(InputAction.CallbackContext _context)
+        {
+            IsSprinting = _context.started || _context.performed;
         }
 
         public void SetInputJump(InputAction.CallbackContext _context)
@@ -151,16 +167,39 @@ namespace BUT
             else GravityVelocity += m_Movement.JumpPower;
         }
 
+        IEnumerator Moving()
+        {
+            while (enabled)
+            {
+                if (m_MovementInput.magnitude > 0.1f)
+                {
+                    if (!IsMoving) IsMoving = true;
+                    // clamp input magnitude
+                    m_MovementInput = Vector3.ClampMagnitude(m_MovementInput, 1);
+                }
+                else if (IsMoving)
+                {
+                    IsMoving = false;
+                }
+
+                // Envoyer l'input souris à la caméra orbitale
+                if (m_OrbitCamera != null)
+                    m_OrbitCamera.SetLookInput(m_LookInput);
+
+                ManageDirection();
+                ManageGravity();
+                if (IsMoving) ApplyRotation();
+                ApplyMovement();
+
+                yield return new WaitForFixedUpdate();
+            }
+        }
+
         IEnumerator WaitForLanding()
         {
             yield return new WaitUntil(() => !m_CharacterController.isGrounded);
             yield return new WaitUntil(() => m_CharacterController.isGrounded);
             JumpNumber = 0;
-        }
-
-        public void SetInputSprint(InputAction.CallbackContext _context)
-        {
-            IsSprinting = _context.started || _context.performed;
         }
 
         private void ManageDirection()
@@ -172,7 +211,7 @@ namespace BUT
             {
                 // Axes caméra projetés sur le plan horizontal
                 Vector3 camForward = Vector3.ProjectOnPlane(Camera.main.transform.forward, Vector3.up).normalized;
-                Vector3 camRight   = Vector3.ProjectOnPlane(Camera.main.transform.right,   Vector3.up).normalized;
+                Vector3 camRight = Vector3.ProjectOnPlane(Camera.main.transform.right, Vector3.up).normalized;
 
                 // Direction relative à la caméra
                 m_MovementDirection = camForward * m_MovementInput.y + camRight * m_MovementInput.x;
@@ -183,6 +222,7 @@ namespace BUT
             m_MovementDirection.Normalize();
 
             Debug.DrawRay(transform.position, -transform.up * m_RayLenght, Color.red);
+
             if (Physics.Raycast(transform.position, -transform.up, out m_Hit, m_RayLenght, m_RayMask))
             {
                 IsGrounded = true;
@@ -197,11 +237,10 @@ namespace BUT
             }
 
             Direction = m_MovementDirection;
-            Debug.DrawRay(transform.position, Direction, Color.red);
 
             // calculate speed according to input force
             CurrentSpeed =
-                ((IsSprinting) ? m_Movement.SprintFactor : 1) *
+                (IsSprinting ? m_Movement.SprintFactor : 1f) *
                 m_Movement.MaxSpeed *
                 m_Movement.SpeedFactor.Evaluate(m_MovementInput.magnitude);
         }
@@ -224,7 +263,6 @@ namespace BUT
         public void ApplyMovement()
         {
             Debug.DrawRay(transform.position, FullDirection, Color.yellow);
-            // move toward the direction with the current speed
             m_CharacterController.Move(FullDirection * Time.deltaTime);
         }
 
@@ -232,12 +270,10 @@ namespace BUT
         {
             if (m_CharacterController.isGrounded && GravityVelocity < 0.0f)
             {
-                // if grounded set back gravity velocity to a normal number
                 GravityVelocity = -1;
             }
             else
             {
-                // if not grounded add gravity
                 GravityVelocity += GRAVITY * m_Movement.GravityMultiplier * Time.deltaTime;
             }
         }

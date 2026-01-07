@@ -6,6 +6,7 @@ public class ouvertureCoffre : MonoBehaviour
     public Animator animator;
 
     private bool isOpen = false;
+    public bool IsOpened => isOpen; // Propriété publique pour vérifier si le coffre est ouvert
 
     private void OnTriggerEnter(Collider other)
     {
@@ -15,13 +16,15 @@ public class ouvertureCoffre : MonoBehaviour
         }
     }
 
-    void OpenChest()
-    {
-        isOpen = true;
+    private void OpenChest()
+{
+    isOpen = true;
 
-        if (animator != null)
-            animator.SetTrigger("Press");
+    if (animator != null)
+        animator.SetTrigger("Press");
 
-        AudioSource.PlayClipAtPoint(openSound, transform.position);
-    }
+    AudioSource.PlayClipAtPoint(openSound, transform.position);
+
+    GameManager.Instance.EndGame(true); // Victoire : la partie se termine
+}
 }
