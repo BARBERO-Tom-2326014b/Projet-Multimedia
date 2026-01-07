@@ -124,7 +124,7 @@ public class GameManager : MonoBehaviour
     Time.timeScale = 0f;
 
     // Trouver EndGameUI dans la scène
-    var endGameUI = FindObjectOfType<BUT.EndGameUI>();
+    var endGameUI = FindFirstObjectByType<BUT.EndGameUI>();
 
     if (endGameUI != null)
     {
