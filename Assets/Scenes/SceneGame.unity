@@ -1499,51 +1499,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4661435515762813124, guid: e289bf5debb17f6459818c207d781953, type: 3}
   m_PrefabInstance: {fileID: 129996855}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &170785732
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 170785734}
-  - component: {fileID: 170785733}
-  m_Layer: 0
-  m_Name: Tester_EndGame
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &170785733
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 170785732}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9cf49cc6b6565f44db001ce83b8f95e7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BUT.TestEndGame
-  endUI: {fileID: 777776229}
---- !u!4 &170785734
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 170785732}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7.01, y: 2.96, z: 11.34}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &184074057
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9213,7 +9168,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.PlayerInput
   m_Actions: {fileID: -944628639613478452, guid: fad731653ec2f654cba2bed740cd1103, type: 3}
-  m_NotificationBehavior: 2
+  m_NotificationBehavior: 0
   m_UIInputModule: {fileID: 0}
   m_DeviceLostEvent:
     m_PersistentCalls:
@@ -9325,6 +9280,7 @@ MonoBehaviour:
   m_RayMask:
     serializedVersion: 2
     m_Bits: 0
+  m_OrbitCamera: {fileID: 0}
   OnSpeedChange:
     m_PersistentCalls:
       m_Calls:
@@ -11215,6 +11171,7 @@ MonoBehaviour:
   defeatScore: {fileID: 1587454695}
   defeatBtnMenu: {fileID: 1792561084}
   defeatBtnQuit: {fileID: 1574066702}
+  chest: {fileID: 4690869768377273487}
 --- !u!1001 &801047906
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12257,8 +12214,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1136385243}
+  m_Children: []
   m_Father: {fileID: 543450652419465909}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &954596261
@@ -13214,7 +13170,7 @@ GameObject:
   - component: {fileID: 1136385243}
   - component: {fileID: 1136385242}
   - component: {fileID: 1136385241}
-  - component: {fileID: 1136385244}
+  - component: {fileID: 1136385245}
   m_Layer: 0
   m_Name: MainCamera
   m_TagString: MainCamera
@@ -13229,7 +13185,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1136385240}
-  m_Enabled: 0
+  m_Enabled: 1
 --- !u!20 &1136385242
 Camera:
   m_ObjectHideFlags: 0
@@ -13289,25 +13245,32 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1136385240}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -3}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.5, z: -3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 954596260}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1136385244
+--- !u!114 &1136385245
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1136385240}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 37fec7a35560569488352c98195422cb, type: 3}
+  m_Script: {fileID: 11500000, guid: 4fcd0b93263a11744997757728c7097d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LockCameraTransform
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitCamera
+  target: {fileID: 0}
+  distance: 5
+  heightOffset: 1
+  pitchLimits: {x: -20, y: 60}
+  sensX: 10
+  sensY: 10
+  lockCursor: 0
 --- !u!1001 &1155750549
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -33301,7 +33264,6 @@ SceneRoots:
   - {fileID: 543450652419465909}
   - {fileID: 1687583793}
   - {fileID: 777776228}
-  - {fileID: 170785734}
   - {fileID: 1334634456}
   - {fileID: 930097855}
   - {fileID: 1468734704}
@@ -33316,3 +33278,4 @@ SceneRoots:
   - {fileID: 1969631922}
   - {fileID: 4690869768376848566}
   - {fileID: 8107547060419833135}
+  - {fileID: 1136385243}
