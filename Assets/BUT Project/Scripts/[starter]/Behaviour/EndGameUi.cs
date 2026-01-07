@@ -100,20 +100,20 @@ namespace BUT
         }
 
         private void UpdateVictoryScore()
-        {
-            if (score && victoryScore)
-                victoryScore.text = "Score: " + score.Value;
-        }
+{
+    if (GameManager.Instance != null && victoryScore)
+    {
+        victoryScore.text = "Score: " + GameManager.Instance.Score; // Score en cours
+    }
+}
 
         private void UpdateDefeatScore()
-        {
-            if (score && defeatScore)
-            {
-                Debug.Log($"Score au moment de la défaite : {score.Value}");
-                defeatScore.text = "Score: " + score.Value;
-            }
-                
-        }
+{
+    if (GameManager.Instance != null && defeatScore)
+    {
+        defeatScore.text = "Score: " + GameManager.Instance.Score; // Score en cours
+    }
+}
 
         private void StopFootsteps()
         {

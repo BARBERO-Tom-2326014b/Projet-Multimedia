@@ -22,22 +22,22 @@ public class DeathZone : MonoBehaviour
         var playerMovement = other.GetComponent<BUT.PlayerMovement>();
         if (playerMovement != null)
         {
-            playerMovement.enabled = false;
+            playerMovement.enabled = false; // Désactiver le mouvement
         }
 
         var characterController = other.GetComponent<CharacterController>();
         if (characterController != null)
         {
-            characterController.enabled = false;
+            characterController.enabled = false; // Désactiver la collision
         }
 
-        // Prévenir le GameManager (pour mettre à jour le score final dans le panel)
+        // Prévenir le GameManager pour gérer la fin de partie et le score final
         if (GameManager.Instance != null)
         {
-            GameManager.Instance.OnGameEnd();
+            GameManager.Instance.EndGame(false); // Défaite
         }
 
         // Optionnel : mettre le jeu en pause
-        // Time.timeScale = 0f;
+        Time.timeScale = 0f;
     }
 }

@@ -71,7 +71,7 @@ public class EnemyKillPlayer : MonoBehaviour
             // Prévenir le GameManager que la partie est finie (pour mettre à jour le score final)
             if (GameManager.Instance != null)
             {
-                GameManager.Instance.OnGameEnd();
+                GameManager.Instance.EndGame(false);
             }
 
             // Optionnel : pause du jeu
