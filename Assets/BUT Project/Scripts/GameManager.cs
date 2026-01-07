@@ -131,8 +131,21 @@ public class GameManager : MonoBehaviour
             endScoreText.text = finalScore.ToString(); // Affiche le score final
     }
 
-    // === SCORE MANIPULATION ===
-    public void AddScore(int amount)
+    public void BackToMenu()
+{
+    Time.timeScale = 1f;
+    SceneManager.LoadScene("MainMenu");
+}
+    public void EndGame(bool isVictory)
+{
+    Debug.Log($"EndGame appelé | Victoire : {isVictory} | Score final : {score}");
+
+    Time.timeScale = 0f;
+
+    // Trouver EndGameUI dans la scène
+    var endGameUI = FindFirstObjectByType<BUT.EndGameUI>();
+
+    if (endGameUI != null)
     {
         score += amount;
         Debug.Log($"Score ajouté : {amount} | Nouveau score : {score}");
