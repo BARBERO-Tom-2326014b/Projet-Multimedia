@@ -108,7 +108,7 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 0f;
 
         // Affichage de l'UI correspondant
-        var endGameUI = FindObjectOfType<BUT.EndGameUI>();
+        var endGameUI = FindFirstObjectByType<BUT.EndGameUI>();
         if (endGameUI != null)
         {
             Debug.Log($"Panneau actif : {(isVictory ? "Victoire" : "Défaite")}");
