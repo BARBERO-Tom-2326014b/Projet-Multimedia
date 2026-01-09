@@ -63,6 +63,9 @@ namespace BUT
         private Vector2 m_LookInput;
         private Vector2 m_MovementInput;
 
+        // FIX sprint: lecture continue du clavier (robuste même si OnSprint ne reçoit pas le release)
+        private bool m_SprintHeld;
+
         RaycastHit m_Hit;
 
         private bool m_IsGrounded;
@@ -115,13 +118,12 @@ namespace BUT
         public void OnLook(InputValue value)
         {
             m_LookInput = value.Get<Vector2>();
-            // Debug temporaire si besoin :
-            // Debug.Log($"Look input: {m_LookInput}");
         }
 
         public void OnSprint(InputValue value)
         {
-            IsSprinting = value.Get<float>() > 0.5f;
+            // On le garde, mais on ne dépend pas de l'event release (voir polling dans Moving()).
+            IsSprinting = value.isPressed;
         }
 
         public void OnJump(InputValue value)
@@ -148,13 +150,12 @@ namespace BUT
         public void SetInputLook(InputAction.CallbackContext _context)
         {
             m_LookInput = _context.ReadValue<Vector2>();
-            // Debug temporaire :
-            // Debug.Log($"Look input: {m_LookInput}");
         }
 
         public void SetInputSprint(InputAction.CallbackContext _context)
         {
-            IsSprinting = _context.started || _context.performed;
+            // Si jamais tu passes PlayerInput en "Invoke Unity Events"
+            IsSprinting = _context.ReadValueAsButton();
         }
 
         public void SetInputJump(InputAction.CallbackContext _context)
@@ -171,6 +172,16 @@ namespace BUT
         {
             while (enabled)
             {
+                // =========================
+                // FIX SPRINT (robuste)
+                // =========================
+                if (Keyboard.current != null)
+                    m_SprintHeld = Keyboard.current.leftShiftKey.isPressed;
+                else
+                    m_SprintHeld = false;
+
+                IsSprinting = m_SprintHeld;
+
                 if (m_MovementInput.magnitude > 0.1f)
                 {
                     if (!IsMoving) IsMoving = true;

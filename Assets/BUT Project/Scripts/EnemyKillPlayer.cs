@@ -39,6 +39,10 @@ public class EnemyKillPlayer : MonoBehaviour
                 Debug.Log($"BOO KILL -> AddScore({scoreValue})");
                 GameManager.Instance.AddScore(scoreValue);
             }
+            else
+            {
+                Debug.LogError("Relancez le jeu depuis le main menu pour activer le GameManager.");
+            }
 
             // Petit rebond du joueur
             var playerMovement = player.GetComponent<BUT.PlayerMovement>();
