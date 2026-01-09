@@ -2,23 +2,37 @@ using UnityEngine;
 
 public class tropheeVictoire : MonoBehaviour
 {
-    public float vitesseRotation = 100f;
+    [Header("Rotation")]
+    [SerializeField] private float vitesseRotation = 100f;
+
+    // Axe de rotation en local (ex: (0,1,0) pour Y, (0,0,1) pour Z)
+    [SerializeField] private Vector3 axeRotationLocal = Vector3.up;
+
+    // Le visuel à faire tourner (souvent l'enfant "Model")
+    [SerializeField] private Transform visualToRotate;
 
     private bool triggered = false;
 
-    void Update()
+    private void Awake()
     {
-        // Rotation permanente
-        transform.Rotate(0f, vitesseRotation * Time.deltaTime, 0f);
+        if (visualToRotate == null)
+            visualToRotate = transform;
+
+        // Sécurité: si quelqu'un met (0,0,0)
+        if (axeRotationLocal.sqrMagnitude < 0.0001f)
+            axeRotationLocal = Vector3.up;
+    }
+
+    private void Update()
+    {
+        // Tourne sur l'axe local choisi
+        visualToRotate.Rotate(axeRotationLocal.normalized, vitesseRotation * Time.deltaTime, Space.Self);
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (triggered)
-            return;
-
-        if (!other.CompareTag("Player"))
-            return;
+        if (triggered) return;
+        if (!other.CompareTag("Player")) return;
 
         triggered = true;
 
@@ -26,16 +40,14 @@ public class tropheeVictoire : MonoBehaviour
 
         if (GameManager.Instance != null)
         {
-            GameManager.Instance.EndGame(true); // Victoire
+            GameManager.Instance.EndGame(true);
         }
         else
         {
             Debug.LogError("Relancez le jeu depuis le main menu pour activer le GameManager.");
-            // Fallback si jamais il n'existe pas
             Time.timeScale = 0f;
         }
 
-        // Optionnel : enlever le trophée après contact
-         Destroy(gameObject);
+        Destroy(gameObject);
     }
 }

@@ -25578,12 +25578,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5565045522191242128}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 62e6c8f12f3d62045a245a160b0cdf6b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::tropheeVictoire
   vitesseRotation: 100
+  axeRotationLocal: {x: 0, y: 1, z: 0}
+  visualToRotate: {fileID: 0}
 --- !u!65 &5565045522191242133
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -25652,6 +25654,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::tropheeVictoire
   vitesseRotation: 100
+  axeRotationLocal: {x: 0, y: 0, z: 1}
+  visualToRotate: {fileID: 5565045522191242129}
 --- !u!65 &5565045522377327093
 BoxCollider:
   m_ObjectHideFlags: 0
